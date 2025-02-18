@@ -134,7 +134,12 @@ class _PickUpComponentState extends ConsumerState<PickUpComponent> {
               padding: EdgeInsets.all(10),
               itemBuilder: (context, index) {
                 if (index == items.length) {
-                  return CircularProgressIndicator();
+                  return Padding(
+                    padding: EdgeInsets.symmetric(vertical: 10.0),
+                    child: Center(
+                      child: CircularProgressIndicator(),
+                    ),
+                  );
                 }
 
                 final item = items[index];
