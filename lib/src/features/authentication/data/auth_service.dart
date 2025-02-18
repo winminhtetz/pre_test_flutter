@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:developer';
 
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
+import 'package:pre_test_flutter/src/features/authentication/domain/login_response_model.dart';
 import 'package:pre_test_flutter/src/services/dio/dio_provider.dart';
 import 'package:pre_test_flutter/src/services/share_preference/share_preference_provider.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
@@ -41,8 +41,20 @@ class AuthService extends _$AuthService {
 
       if (response.statusCode == 200) {
         final data = response.data;
-        _sharedPreferences.setBool('isLogin', true);
-        update((_) => true);
+
+        final loginResponse = LoginResponse.fromJson(response.data);
+        final loginData = loginResponse.data;
+        final accessToken = loginData.accessToken;
+        final refreshToken = loginData.refreshToken;
+        final expiresIn = loginData.expiresIn;
+
+        await _sharedPreferences.setString('accessToken', accessToken);
+        await _sharedPreferences.setString('refreshToken', refreshToken);
+        await _sharedPreferences.setInt('expiresIn', expiresIn);
+
+        await _sharedPreferences.setBool('isLogin', true);
+
+        await update((_) => true);
         onSuccess(data['message']);
       } else {
         onError(response.data['message']);
@@ -53,7 +65,10 @@ class AuthService extends _$AuthService {
   }
 
   Future<void> logout() async {
-    _sharedPreferences.setBool('isLogin', false);
-    update((_) => false);
+    await _sharedPreferences.setBool('isLogin', false);
+    await _sharedPreferences.remove('accessToken');
+    await _sharedPreferences.remove('refreshToken');
+    await _sharedPreferences.remove('expiresIn');
+    await update((_) => false);
   }
 }
