@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:pre_test_flutter/src/common_widgets/error_page.dart';
 import 'package:pre_test_flutter/src/common_widgets/loading_page.dart';
+import 'package:pre_test_flutter/src/extensions/show_toast_extension.dart';
 import 'package:pre_test_flutter/src/features/authentication/data/auth_service.dart';
 import 'package:pre_test_flutter/src/features/pick_up/data/pickup_service.dart';
 
@@ -38,6 +39,8 @@ class _PickUpPageState extends ConsumerState<PickUpPage>
           TextButton(
             onPressed: () async {
               await ref.read(authServiceProvider.notifier).logout();
+              if (!context.mounted) return;
+              context.showToast('Logout success!');
             },
             child: Text(
               'Logout',

@@ -64,7 +64,49 @@ class AuthService extends _$AuthService {
     }
   }
 
+  Future<void> _revokeAccessToken() async {
+    final response = await _dio.post(
+      '/v3/user/revoke_access_token_by_username',
+      options: Options(
+        headers: {
+          'Authorization':
+              'Bearer ${_sharedPreferences.getString('accessToken')}',
+        },
+      ),
+    );
+
+    if (response.statusCode == 200) {
+      // print('Access token revoked');
+    } else {
+      // print('Failed to revoke access token');
+    }
+  }
+
+  Future<void> requestNewAccessToken() async {
+    final response = await _dio.post(
+      '/v3/user/refresh_token',
+      data: json.encode({
+        'accessToken': _sharedPreferences.getString('accessToken'),
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      // final data = response.data;
+
+      final loginResponse = LoginResponse.fromJson(response.data);
+      final loginData = loginResponse.data;
+      final accessToken = loginData.accessToken;
+      final refreshToken = loginData.refreshToken;
+      final expiresIn = loginData.expiresIn;
+
+      await _sharedPreferences.setString('accessToken', accessToken);
+      await _sharedPreferences.setString('refreshToken', refreshToken);
+      await _sharedPreferences.setInt('expiresIn', expiresIn);
+    }
+  }
+
   Future<void> logout() async {
+    await _revokeAccessToken();
     await _sharedPreferences.setBool('isLogin', false);
     await _sharedPreferences.remove('accessToken');
     await _sharedPreferences.remove('refreshToken');
